@@ -15,7 +15,7 @@
       <DotLottieVue
         ref="myLottie"
         :autoplay="false"
-        :loop="true"
+        :loop="false"
         src="https://lottie.host/226192a5-83eb-4451-95fe-61594d3c1de7/7EDME6UxvT.lottie"
       />
     </div>

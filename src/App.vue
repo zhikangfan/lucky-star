@@ -1,8 +1,9 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import VConsole from 'vconsole';
-
-const vConsole = new VConsole();
+if (import.meta.env.NODE_ENV === 'development') {
+  new VConsole();
+}
 </script>
 
 <template>
