@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { getProfile } from '@/api/user.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,10 +19,10 @@ const router = createRouter({
 })
 
 // router.beforeEach((to, from, next) => {
-//   if (to.name !== 'login') {
-//     next({ name: 'login' })
-//   } else {
+//   getProfile().then(() => {
 //     next()
-//   }
+//   }).catch(() => {
+//     next({ name: 'login' })
+//   })
 // })
 export default router

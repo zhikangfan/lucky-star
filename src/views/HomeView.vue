@@ -1,6 +1,10 @@
 <template>
   <main>
     <h1 class="title">幸运大抽奖</h1>
+    <van-space>
+      <van-button type="primary" @click="() => changePopup(true)">我的奖品</van-button>
+    </van-space>
+    <div>剩余抽奖次数：{{count}}</div>
     <LuckyWheel
       ref="myLucky"
       width="300px"
@@ -19,14 +23,27 @@
         src="https://lottie.host/226192a5-83eb-4451-95fe-61594d3c1de7/7EDME6UxvT.lottie"
       />
     </div>
+    <van-popup v-model:show="showPopup" position="bottom" round
+               style="height: 90%; padding-top: 4px;">
+      <van-coupon-list
+        :coupons="coupons"
+        :chosen-coupon="chosenCoupon"
+        :disabled-coupons="disabledCoupons"
+        @change="onChange"
+        @exchange="onExchange"
+        :show-exchange-bar="false"
+      />
+    </van-popup>
   </main>
 </template>
 <script>
 import bgPNG from '@/assets/bg.png'
 import btnPNG from '@/assets/btn.png'
 import { getPrizeList } from '@/api/prize.js'
-import { showDialog } from 'vant'
+import { showDialog, showNotify, showToast } from 'vant'
 import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
+import { addHistory, getHistoryList } from '@/api/history.js'
+import { getProfile } from '@/api/user.js'
 
 export default {
   components: {
@@ -69,8 +86,14 @@ export default {
           ],
         },
       ],
+      count: 0,
       currentPrize: null,
       isShow: false,
+      showPopup: false,
+      active: 0,
+      coupons: [],
+      disabledCoupons: [],
+      chosenCoupon: -1,
     }
   },
   computed: {
@@ -127,6 +150,16 @@ export default {
             message: `恭喜您获得了：${prize.info.name}*1`,
             theme: 'round-button',
           })
+          addHistory({
+            prizeId: prize.info.pid,
+            name: prize.info.name
+          }).then(res => {
+            if (res.status !== 200) {
+              showToast(res?.msg)
+            }
+          }).catch(() => {
+            showNotify({ message: '啊哦～服务出了点问题！', type: 'danger' });
+          })
         }
       })
     },
@@ -153,15 +186,59 @@ export default {
       if (res.status === 200) {
         this.dataList = res.data
       } else {
-        showDialog({
+        await showDialog({
           title: '温馨提示',
           message: res.msg,
         })
       }
       console.log(res)
     },
+    async changePopup(val) {
+      this.showPopup = val
+      if (val) {
+        let res = await getHistoryList()
+        if (res.status === 200) {
+          const d = res.data?.map(history => {
+            return {
+              id: history.hid,
+              condition: '无门槛',
+              reason: '',
+              value: 150,
+              name: history.name,
+              startAt: 1489104000,
+              endAt: 1514592000,
+              valueDesc: '1.5',
+              unitDesc: '元',
+              description: '一旦使用对方不得违抗',
+              info: history
+            }
+          })
+          this.coupons = d.filter(item => !item.info.status)
+          this.defaultCoupons = d.filter(item => item.info.status)
+        }
+
+        console.log(res)
+      }
+    },
+    onChange(index){
+      this.chosenCoupon = index;
+    },
+    onExchange(code) {
+      console.log(code, '--code')
+    },
   },
   mounted() {
+    getProfile().then(res => {
+      if (res.status === 200) {
+        this.count = res.data.count
+      } else {
+        this.$router.replace({
+          name: 'login'
+        })
+      }
+    }).catch(() => {
+      this.count = 0;
+    })
     this.getData()
   },
 }
