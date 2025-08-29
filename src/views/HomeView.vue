@@ -1,10 +1,10 @@
 <template>
   <main>
     <h1 class="title">幸运大抽奖</h1>
-    <van-space>
-      <van-button type="primary" @click="() => changePopup(true)">我的奖品</van-button>
-    </van-space>
-    <div>剩余抽奖次数：{{count}}</div>
+    <div style="background: rgba(0,0,0,.5); margin: 20px 0;color: #fff;font-size: 16px;padding: 4px 20px;
+    border-radius: 14px;">您还有
+      <span style="color: rgba(234, 62, 68, 1); font-weight: 700;">{{ userInfo?.count || 0 }}</span>
+      次抽奖机会</div>
     <LuckyWheel
       ref="myLucky"
       width="300px"
@@ -15,6 +15,12 @@
       @start="startCallback"
       @end="endCallback"
     />
+
+    <div style="margin: 20px 0;">
+      <van-space>
+        <button class="btn" type="primary" @click="() => changePopup(true)">我的奖品</button>
+      </van-space>
+    </div>
     <div class="dotLottieBox" v-show="isShow">
       <DotLottieVue
         ref="myLottie"
@@ -23,8 +29,12 @@
         src="https://lottie.host/226192a5-83eb-4451-95fe-61594d3c1de7/7EDME6UxvT.lottie"
       />
     </div>
-    <van-popup v-model:show="showPopup" position="bottom" round
-               style="height: 90%; padding-top: 4px;">
+    <van-popup
+      v-model:show="showPopup"
+      position="bottom"
+      round
+      style="height: 90%; padding-top: 4px"
+    >
       <van-coupon-list
         :coupons="coupons"
         :chosen-coupon="chosenCoupon"
@@ -43,7 +53,10 @@ import { getPrizeList } from '@/api/prize.js'
 import { showDialog, showNotify, showToast } from 'vant'
 import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
 import { addHistory, getHistoryList } from '@/api/history.js'
-import { getProfile } from '@/api/user.js'
+import { mapActions, mapState } from 'pinia'
+import { useUserStore } from '@/stores/user.js'
+import { updateProfile } from '@/api/user.js'
+import dayjs from 'dayjs'
 
 export default {
   components: {
@@ -86,7 +99,6 @@ export default {
           ],
         },
       ],
-      count: 0,
       currentPrize: null,
       isShow: false,
       showPopup: false,
@@ -113,23 +125,48 @@ export default {
         }
       })
     },
+    ...mapState(useUserStore, {
+      userInfo: store => {
+        console.log(store)
+        return store.userInfo
+      }
+    })
   },
   methods: {
+    ...mapActions(useUserStore, ['updateUserInfo']),
     // 点击抽奖按钮会触发star回调
-    startCallback() {
+    async startCallback() {
       // 调用抽奖组件的play方法开始游戏
-      this.$refs.myLucky.play()
-      // 模拟调用接口异步抽奖
-      setTimeout(() => {
-        let luckIndex = this.dataList.findIndex(
-          (item, idx) => this.lottery(this.dataList).name === item.name,
-        )
-        while (luckIndex === -1 || luckIndex >= this.prizes.length) {
-          luckIndex = this.lottery(this.dataList)
+      if (this.userInfo?.count > 0) {
+        try {
+          const c = this.userInfo.count - 1
+          await updateProfile({
+            count: c
+          })
+          this.updateUserInfo({
+            count: c
+          })
+          this.$refs.myLucky.play()
+          // 模拟调用接口异步抽奖
+          setTimeout(() => {
+            let luckIndex = this.dataList.findIndex(
+              (item, idx) => this.lottery(this.dataList).name === item.name,
+            )
+            while (luckIndex === -1 || luckIndex >= this.prizes.length) {
+              luckIndex = this.lottery(this.dataList)
+            }
+            // 调用stop停止旋转并传递中奖索引
+            this.$refs.myLucky.stop(luckIndex)
+          }, 100)
+        } catch (e) {
+          showToast("发生了一些错误")
         }
-        // 调用stop停止旋转并传递中奖索引
-        this.$refs.myLucky.stop(luckIndex)
-      }, 100)
+      } else {
+        await showDialog({
+          message: "没有抽奖机会啦～😭"
+        })
+      }
+
     },
     // 抽奖结束会触发end回调
     endCallback(prize) {
@@ -205,11 +242,11 @@ export default {
               reason: '',
               value: 150,
               name: history.name,
-              startAt: 1489104000,
-              endAt: 1514592000,
-              valueDesc: '1.5',
-              unitDesc: '元',
-              description: '一旦使用对方不得违抗',
+              startAt: history.createAt / 1000,
+              endAt: new Date('2099-12-31 23:59:59').getTime() / 1000,
+              valueDesc: '1',
+              unitDesc: '次',
+              description: history.prize.desc,
               info: history
             }
           })
@@ -228,17 +265,6 @@ export default {
     },
   },
   mounted() {
-    getProfile().then(res => {
-      if (res.status === 200) {
-        this.count = res.data.count
-      } else {
-        this.$router.replace({
-          name: 'login'
-        })
-      }
-    }).catch(() => {
-      this.count = 0;
-    })
     this.getData()
   },
 }
@@ -252,7 +278,7 @@ main {
 
 main h1 {
   margin-top: 62px;
-  margin-bottom: 40px;
+  //margin-bottom: 40px;
   font-weight: bolder;
 }
 
@@ -266,5 +292,19 @@ main h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.btn {
+  width: 250px;
+  height: 41px;
+  background: rgb(255, 71, 78);
+  box-shadow: rgba(141, 19, 27, 0.15) 0px 3px 0px 0px;
+  border-radius: 24px;
+  outline: none;
+  border: none;
+  font-weight: 500;
+  color: #fff;
+}
+.btn:active {
+  background: rgb(194, 52, 58);
 }
 </style>

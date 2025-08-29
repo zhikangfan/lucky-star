@@ -18,8 +18,9 @@ const responseFullFilledHandler = (response) => {
   return response.data;
 }
 const responseRejectedHandler = (err) => {
+  console.log(err,'--')
   // return Promise.reject(err);
-  // TODO: 通知网络错误
+  // TODO: 通知网络错误，或者服务内部发生错误
   throw err;
 }
 http.interceptors.response.use(responseFullFilledHandler, responseRejectedHandler)

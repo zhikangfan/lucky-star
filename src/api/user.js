@@ -17,7 +17,7 @@ export const getProfile = () => {
 }
 
 export const updateProfile = (data) => {
-  return http.post('/user/updateProfile', data)
+  return http.post('/user/update', data)
 }
 
 export const register = (data) => {
