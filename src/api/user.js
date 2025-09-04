@@ -30,3 +30,6 @@ export const bind = (data) => {
 export const unbind = () => {
   return http.post('/user/unbind')
 }
+export const addCount = (data) => {
+  return http.post('/user/addCount', data)
+}

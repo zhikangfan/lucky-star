@@ -1,5 +1,5 @@
 <template>
-  <van-popup v-bind="$attrs" @open="onOpen" round>
+  <van-popup v-bind="$attrs" @open="onOpen" round @close="onClose">
     <div class="helpContainer">
       <div class="title">
         扫描或分享二维码
@@ -16,27 +16,33 @@ import QRCode from 'qrcode'
 import { ref } from 'vue'
 import { check, getQRCode } from '@/api/invite.js'
 const qrCodeSrc = ref('')
-  const onOpen = async () => {
-  let res = await getQRCode()
-    console.log(res)
-    if (res.code === 200) {
-      qrCodeSrc.value = await QRCode.toDataURL(res.data.src)
-      let start = true
-      while (start) {
-        console.log('start')
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        let r = await check(res.data.pid)
-        console.log(r, '--rrr')
-        if (!r) {
-          start = false;
-          console.log('finish')
-          // TODO: 二维码已使用或已过期
-          break;
-        }
+const flag = ref(true)
+const onOpen = async () => {
+  let res = await getQRCode({
+    type: 1
+  })
+  console.log(res)
+  if (res.code === 200) {
+    qrCodeSrc.value = await QRCode.toDataURL(res.data.src)
+    flag.value = true;
+    while (flag.value) {
+      console.log('start')
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      let r = await check(res.data.qid)
+      console.log(r, '--rrr')
+      if (!r || r.code !== 200) {
+        flag.value = false
+        console.log('finish')
+        // TODO: 二维码已使用或已过期
+        break;
       }
     }
-
   }
+
+}
+const onClose = async () => {
+  flag.value = false;
+}
 </script>
 <style lang="less" scoped>
 .helpContainer {

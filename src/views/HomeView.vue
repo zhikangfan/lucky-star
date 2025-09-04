@@ -1,54 +1,66 @@
 <template>
-<BaseLayout>
-  <main>
-    <h1 class="title">幸运大抽奖</h1>
-    <div style="background: rgba(0,0,0,.5); margin: 20px 0;color: #fff;font-size: 16px;padding: 4px 20px;
-    border-radius: 14px;">您还有
-      <span style="color: rgba(234, 62, 68, 1); font-weight: 700;">{{ userInfo?.count || 0 }}</span>
-      次抽奖机会</div>
-    <LuckyWheel
-      ref="myLucky"
-      width="300px"
-      height="300px"
-      :prizes="prizes"
-      :blocks="blocks"
-      :buttons="buttons"
-      @start="startCallback"
-      @end="endCallback"
-    />
+  <BaseLayout>
+    <main>
+      <h1 class="title">幸运大抽奖</h1>
+      <div
+        style="
+          background: rgba(0, 0, 0, 0.5);
+          margin: 20px 0;
+          color: #fff;
+          font-size: 16px;
+          padding: 4px 20px;
+          border-radius: 14px;
+        "
+      >
+        您还有
+        <span style="color: rgba(234, 62, 68, 1); font-weight: 700">{{
+          userInfo?.lottery_chances || 0
+        }}</span>
+        次抽奖机会
+      </div>
+      <LuckyWheel
+        ref="myLucky"
+        width="300px"
+        height="300px"
+        :prizes="prizes"
+        :blocks="blocks"
+        :buttons="buttons"
+        @start="startCallback"
+        @end="endCallback"
+      />
 
-    <div style="margin: 20px 0;">
-      <van-space direction="vertical">
-        <button class="btn" type="primary" @click="() => changePopup(true)">我的奖品</button>
-        <button class="btn" type="primary" @click="handleHelp">邀请助力</button>
-      </van-space>
-    </div>
-    <div class="dotLottieBox" v-show="isShow">
-      <DotLottieVue
-        ref="myLottie"
-        :autoplay="false"
-        :loop="false"
-        src="https://lottie.host/226192a5-83eb-4451-95fe-61594d3c1de7/7EDME6UxvT.lottie"
-      />
-    </div>
-    <van-popup
-      v-model:show="showPopup"
-      position="bottom"
-      round
-      style="height: 90%; padding-top: 4px"
-    >
-      <van-coupon-list
-        :coupons="coupons"
-        :chosen-coupon="chosenCoupon"
-        :disabled-coupons="disabledCoupons"
-        @change="onChange"
-        @exchange="onExchange"
-        :show-exchange-bar="false"
-      />
-    </van-popup>
-    <HelpPopup v-model:show="showQRCode"/>
-  </main>
-</BaseLayout>
+      <div style="margin: 20px 0">
+        <van-space direction="vertical">
+          <button class="btn" type="primary" @click="() => changePopup(true)">我的奖品</button>
+          <button class="btn" type="primary" @click="handleHelp">邀请助力</button>
+        </van-space>
+      </div>
+      <div class="dotLottieBox" v-show="isShow">
+        <DotLottieVue
+          ref="myLottie"
+          :autoplay="false"
+          :loop="false"
+          src="https://lottie.host/226192a5-83eb-4451-95fe-61594d3c1de7/7EDME6UxvT.lottie"
+        />
+      </div>
+      <van-popup
+        v-model:show="showPopup"
+        position="bottom"
+        round
+        style="height: 90%; padding-top: 4px"
+      >
+        <van-coupon-list
+          :coupons="coupons"
+          :chosen-coupon="chosenCoupon"
+          :disabled-coupons="disabledCoupons"
+          @change="onChange"
+          @exchange="onExchange"
+          :show-exchange-bar="false"
+        />
+      </van-popup>
+      <HelpPopup v-model:show="showQRCode" />
+    </main>
+  </BaseLayout>
 </template>
 <script>
 import bgPNG from '@/assets/bg.png'
@@ -59,8 +71,7 @@ import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
 import { addHistory, getHistoryList } from '@/api/history.js'
 import { mapActions, mapState } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
-import { updateProfile } from '@/api/user.js'
-import dayjs from 'dayjs'
+import { addCount, updateProfile } from '@/api/user.js'
 import HelpPopup from '@/components/HelpPopup.vue'
 import { writeOff } from '@/api/invite.js'
 import BaseLayout from '@/layout/BaseLayout.vue'
@@ -136,26 +147,24 @@ export default {
       })
     },
     ...mapState(useUserStore, {
-      userInfo: store => {
+      userInfo: (store) => {
         console.log(store)
         return store.userInfo
-      }
-    })
+      },
+    }),
   },
   methods: {
     ...mapActions(useUserStore, ['updateUserInfo']),
     // 点击抽奖按钮会触发star回调
     async startCallback() {
       // 调用抽奖组件的play方法开始游戏
-      if (this.userInfo?.count > 0) {
+      if (this.userInfo?.lottery_chances > 0) {
         try {
-          const c = this.userInfo.count - 1
-          await updateProfile({
-            count: c
-          })
-          this.updateUserInfo({
-            count: c
-          })
+          const c = this.userInfo.lottery_chances - 1
+          // await updateProfile({
+          //   lottery_chances: c,
+          // })
+          // await this.updateUserInfo()
           this.$refs.myLucky.play()
           // 模拟调用接口异步抽奖
           setTimeout(() => {
@@ -169,46 +178,47 @@ export default {
             this.$refs.myLucky.stop(luckIndex)
           }, 100)
         } catch (e) {
-          showToast("发生了一些错误")
+          showToast('发生了一些错误')
         }
       } else {
         await showDialog({
-          message: "没有抽奖机会啦～😭"
+          message: '没有抽奖机会啦～😭',
         })
       }
-
     },
     // 抽奖结束会触发end回调
     endCallback(prize) {
-      // 播放动画
-      const dotLottie = this.$refs.myLottie.getDotLottieInstance()
-      this.isShow = true
-      dotLottie.play()
-      dotLottie.addEventListener('complete', () => {
-        this.isShow = false
-        if (prize?.info.name === '空空卡') {
-          showDialog({
-            message: `很遗憾！未中奖！`,
-            theme: 'round-button',
-          })
-        } else {
-          showDialog({
-            title: '中奖啦！🎉',
-            message: `恭喜您获得了：${prize.info.name}*1`,
-            theme: 'round-button',
-          })
-          addHistory({
-            prizeId: prize.info.pid,
-            name: prize.info.name
-          }).then(res => {
-            if (res.code !== 200) {
-              showToast(res?.msg)
-            }
-          }).catch(() => {
-            showNotify({ message: '啊哦～服务出了点问题！', type: 'danger' });
-          })
-        }
-      })
+      // // 播放动画
+      // const dotLottie = this.$refs.myLottie.getDotLottieInstance()
+      // this.isShow = true
+      // dotLottie.play()
+      // dotLottie.addEventListener('complete', () => {
+      //   this.isShow = false
+      //   if (prize?.info.name === '空空卡') {
+      //     showDialog({
+      //       message: `很遗憾！未中奖！`,
+      //       theme: 'round-button',
+      //     })
+      //   } else {
+      //     showDialog({
+      //       title: '中奖啦！🎉',
+      //       message: `恭喜您获得了：${prize.info.name}*1`,
+      //       theme: 'round-button',
+      //     })
+      //     addHistory({
+      //       prizeId: prize.info.pid,
+      //       name: prize.info.name,
+      //     })
+      //       .then((res) => {
+      //         if (res.code !== 200) {
+      //           showToast(res?.msg)
+      //         }
+      //       })
+      //       .catch(() => {
+      //         showNotify({ message: '啊哦～服务出了点问题！', type: 'danger' })
+      //       })
+      //   }
+      // })
     },
     lottery(items) {
       // 计算总权重
@@ -245,7 +255,7 @@ export default {
       if (val) {
         let res = await getHistoryList()
         if (res.code === 200) {
-          const d = res.data?.map(history => {
+          const d = res.data?.map((history) => {
             return {
               id: history.hid,
               condition: '无门槛',
@@ -257,18 +267,18 @@ export default {
               valueDesc: '1',
               unitDesc: '次',
               description: history.prize.desc,
-              info: history
+              info: history,
             }
           })
-          this.coupons = d.filter(item => !item.info.status)
-          this.defaultCoupons = d.filter(item => item.info.status)
+          this.coupons = d.filter((item) => !item.info.status)
+          this.defaultCoupons = d.filter((item) => item.info.status)
         }
 
         console.log(res)
       }
     },
-    onChange(index){
-      this.chosenCoupon = index;
+    onChange(index) {
+      this.chosenCoupon = index
     },
     onExchange(code) {
       console.log(code, '--code')
@@ -277,24 +287,42 @@ export default {
       this.showQRCode = true
     },
     async checkInvite() {
-      const {inviter, qid, type} = this.$route.query;
+      const { inviter, qid, type } = this.$route.query
       if (inviter && qid && type) {
-        await showDialog({
-          title: "温馨提示",
-          message: "将为好友增加一次抽奖机会"
-        })
-        const res = await writeOff({
-          inviter,
-          qid,
-          type
-        })
-        if (res.code === 200) {
-          showToast("助力成功")
-        } else {
-          showToast(res.msg)
+        if (type === 0) {
+          await showDialog({
+            title: '温馨提示',
+            message: '将为好友增加一次抽奖机会',
+          })
+          const res = await writeOff({
+            inviter,
+            qid,
+            type,
+          })
+          if (res.code === 200) {
+            addCount({
+              inviter: inviter,
+            }).then(r => {
+              if (r.code === 200) {
+                showToast('助力成功')
+              } else {
+                showToast(r.msg)
+              }
+            }).catch(e => {
+              showToast("助力失败")
+            })
+
+          } else {
+            showToast(res.msg)
+          }
+        } else if (type === 1) {
+          await showDialog({
+            title: '温馨提示',
+            message: '确认核销',
+          })
         }
       }
-    }
+    },
   },
   mounted() {
     this.checkInvite()
