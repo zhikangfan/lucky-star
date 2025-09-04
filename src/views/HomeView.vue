@@ -17,8 +17,9 @@
     />
 
     <div style="margin: 20px 0;">
-      <van-space>
+      <van-space direction="vertical">
         <button class="btn" type="primary" @click="() => changePopup(true)">我的奖品</button>
+        <button class="btn" type="primary" @click="handleHelp">邀请助力</button>
       </van-space>
     </div>
     <div class="dotLottieBox" v-show="isShow">
@@ -44,6 +45,7 @@
         :show-exchange-bar="false"
       />
     </van-popup>
+    <HelpPopup v-model:show="showQRCode"/>
   </main>
 </template>
 <script>
@@ -57,9 +59,12 @@ import { mapActions, mapState } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
 import { updateProfile } from '@/api/user.js'
 import dayjs from 'dayjs'
+import HelpPopup from '@/components/HelpPopup.vue'
+import { writeOff } from '@/api/invite.js'
 
 export default {
   components: {
+    HelpPopup,
     DotLottieVue,
   },
   data() {
@@ -106,11 +111,12 @@ export default {
       coupons: [],
       disabledCoupons: [],
       chosenCoupon: -1,
+      showQRCode: false,
     }
   },
   computed: {
     prizes() {
-      return this.dataList.map((item, idx) => {
+      return this.dataList?.map((item, idx) => {
         return {
           background: idx % 2 === 0 ? '#E8589F' : '#F9F7D8',
           fonts: [
@@ -191,7 +197,7 @@ export default {
             prizeId: prize.info.pid,
             name: prize.info.name
           }).then(res => {
-            if (res.status !== 200) {
+            if (res.code !== 200) {
               showToast(res?.msg)
             }
           }).catch(() => {
@@ -220,7 +226,7 @@ export default {
     },
     async getData() {
       const res = await getPrizeList()
-      if (res.status === 200) {
+      if (res.code === 200) {
         this.dataList = res.data
       } else {
         await showDialog({
@@ -234,7 +240,7 @@ export default {
       this.showPopup = val
       if (val) {
         let res = await getHistoryList()
-        if (res.status === 200) {
+        if (res.code === 200) {
           const d = res.data?.map(history => {
             return {
               id: history.hid,
@@ -263,22 +269,46 @@ export default {
     onExchange(code) {
       console.log(code, '--code')
     },
+    handleHelp() {
+      this.showQRCode = true
+    },
+    async checkInvite() {
+      const {inviter, qid, type} = this.$route.query;
+      if (inviter && qid && type) {
+        await showDialog({
+          title: "温馨提示",
+          message: "将为好友增加一次抽奖机会"
+        })
+        const res = await writeOff({
+          inviter,
+          qid,
+          type
+        })
+        if (res.code === 200) {
+          showToast("助力成功")
+        } else {
+          showToast(res.msg)
+        }
+      }
+    }
   },
   mounted() {
+    this.checkInvite()
     this.getData()
   },
 }
 </script>
 <style scoped>
 main {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 main h1 {
-  margin-top: 62px;
-  //margin-bottom: 40px;
   font-weight: bolder;
 }
 

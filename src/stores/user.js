@@ -21,7 +21,7 @@ export const useUserStore = defineStore('user', () => {
 
   const updateUserInfo = async () => {
     let res = await getProfile()
-    if (res.status === 200) {
+    if (res.code === 200) {
       userInfo.value = {
         ...userInfo.value,
         ...res.data

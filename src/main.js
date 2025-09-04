@@ -5,7 +5,7 @@ import { createPinia } from 'pinia'
 import VueLuckyCanvas from '@lucky-canvas/vue'
 import App from './App.vue'
 import router from './router'
-import { Form, Field, CellGroup, Button, Dialog, Space, Popover, Popup, Tab, Tabs, CouponCell, CouponList} from 'vant';
+import { Form, Field, CellGroup, Button, Dialog, Space, Popover, Popup, Tab, Tabs, CouponCell, CouponList, Image, Loading ,Tabbar, TabbarItem} from 'vant';
 const app = createApp(App)
 
 app.use(createPinia())
@@ -24,4 +24,8 @@ app.use(Tab);
 app.use(Tabs);
 app.use(CouponCell);
 app.use(CouponList);
+app.use(Image);
+app.use(Loading);
+app.use(Tabbar);
+app.use(TabbarItem);
 app.mount('#app')

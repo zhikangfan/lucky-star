@@ -39,7 +39,7 @@ const onSubmit = async (values) => {
     account: account.value,
     password: password.value,
   })
-  if (res.status !== 200) {
+  if (res.code !== 200) {
     showDialog({
       title: '温馨提示',
       message: res.msg,

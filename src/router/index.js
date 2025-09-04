@@ -15,12 +15,22 @@ const router = createRouter({
       name: 'login',
       component: () => import('../views/LoginView.vue'),
     },
+    {
+      path: '/mine',
+      name: 'mine',
+      component: () => import('../views/MineView.vue'),
+    },
   ],
 })
 
 router.beforeEach(async (to, from, next) => {
-  const userStore = useUserStore()
-  await userStore.updateUserInfo()
-  next()
+  if (to.name === 'login') {
+   next();
+  } else {
+    const userStore = useUserStore()
+    await userStore.updateUserInfo()
+    next()
+  }
+
 })
 export default router

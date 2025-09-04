@@ -7,12 +7,13 @@ const http = axios.create({
   withCredentials: true, // 携带cookie
 })
 const responseFullFilledHandler = (response) => {
-  if (response.data.status === 401) {
+  console.log(response, '11')
+  if (response.data.code === 401) {
     router.replace({
       path: '/login'
     })
   }
-  if (response.data.status === 500) {
+  if (response.data.code === 500) {
 
   }
   return response.data;
