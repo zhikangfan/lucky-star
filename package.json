@@ -7,7 +7,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "dev:home": "vite --mode home --host",
     "build": "vite build",
     "preview": "vite preview",
@@ -20,6 +20,7 @@
     "axios": "^1.11.0",
     "dayjs": "^1.11.15",
     "pinia": "^3.0.3",
+    "pubsub-js": "^1.9.5",
     "qrcode": "^1.5.4",
     "query-string": "^9.2.2",
     "vant": "^4.9.21",

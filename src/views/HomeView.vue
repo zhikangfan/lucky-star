@@ -1,4 +1,5 @@
 <template>
+<BaseLayout>
   <main>
     <h1 class="title">幸运大抽奖</h1>
     <div style="background: rgba(0,0,0,.5); margin: 20px 0;color: #fff;font-size: 16px;padding: 4px 20px;
@@ -47,6 +48,7 @@
     </van-popup>
     <HelpPopup v-model:show="showQRCode"/>
   </main>
+</BaseLayout>
 </template>
 <script>
 import bgPNG from '@/assets/bg.png'
@@ -61,9 +63,11 @@ import { updateProfile } from '@/api/user.js'
 import dayjs from 'dayjs'
 import HelpPopup from '@/components/HelpPopup.vue'
 import { writeOff } from '@/api/invite.js'
+import BaseLayout from '@/layout/BaseLayout.vue'
 
 export default {
   components: {
+    BaseLayout,
     HelpPopup,
     DotLottieVue,
   },

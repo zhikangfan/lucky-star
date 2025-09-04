@@ -1,13 +1,12 @@
 import axios from 'axios'
 import router from '@/router/index.js'
-
+import PubSub from 'pubsub-js'
 const http = axios.create({
   baseURL: import.meta.env.VITE_BASE_API,
   timeout: 1000 * 60 * 5, // 5分钟超时
   withCredentials: true, // 携带cookie
 })
 const responseFullFilledHandler = (response) => {
-  console.log(response, '11')
   if (response.data.code === 401) {
     router.replace({
       path: '/login'
@@ -19,9 +18,7 @@ const responseFullFilledHandler = (response) => {
   return response.data;
 }
 const responseRejectedHandler = (err) => {
-  console.log(err,'--')
-  // return Promise.reject(err);
-  // TODO: 通知网络错误，或者服务内部发生错误
+  PubSub.publishSync('networkError')
   throw err;
 }
 http.interceptors.response.use(responseFullFilledHandler, responseRejectedHandler)

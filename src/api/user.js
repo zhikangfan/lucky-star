@@ -23,3 +23,10 @@ export const updateProfile = (data) => {
 export const register = (data) => {
   return http.post('/user/register', data)
 }
+
+export const bind = (data) => {
+  return http.post('/user/bind', data)
+}
+export const unbind = () => {
+  return http.post('/user/unbind')
+}

@@ -1,12 +1,12 @@
 import http from '@/api/instance.js'
 
 export  const getQRCode = () => {
-  return http.post('/invite/qrcode')
+  return http.get('/invite/qrcode')
 }
 
-export const writeOff = () => {
-  return http.post('/invite/writeOff')
+export const writeOff = (data) => {
+  return http.post('/invite/writeOff', data)
 }
-export const check = (pid) => {
-  return http.get(`/invite/check?pid=${pid}`)
+export const check = (qid) => {
+  return http.get(`/invite/check?qid=${qid}`)
 }

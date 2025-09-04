@@ -20,6 +20,11 @@ const router = createRouter({
       name: 'mine',
       component: () => import('../views/MineView.vue'),
     },
+    {
+      path: '/invite',
+      name: 'invite',
+      component: () => import('../views/InviteView.vue'),
+    },
   ],
 })
 
