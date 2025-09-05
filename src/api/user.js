@@ -24,6 +24,21 @@ export const register = (data) => {
   return http.post('/user/register', data)
 }
 
+export  const getAddCountQRCode = () => {
+  return http.get('/user/addCountQRCode')
+}
+
+export const addCountCheck = (qid) => {
+  return http.get(`/user/addCountCheck?qid=${qid}`)
+}
+export  const getBindQRCode = () => {
+  return http.get('/user/bindQRCode')
+}
+
+export const bindCheck = (qid) => {
+  return http.get(`/user/bindCheck?qid=${qid}`)
+}
+
 export const bind = (data) => {
   return http.post('/user/bind', data)
 }

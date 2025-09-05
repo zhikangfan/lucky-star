@@ -160,20 +160,10 @@ export default {
       // 调用抽奖组件的play方法开始游戏
       if (this.userInfo?.lottery_chances > 0) {
         try {
-          const c = this.userInfo.lottery_chances - 1
-          // await updateProfile({
-          //   lottery_chances: c,
-          // })
-          // await this.updateUserInfo()
           this.$refs.myLucky.play()
           // 模拟调用接口异步抽奖
           setTimeout(() => {
-            let luckIndex = this.dataList.findIndex(
-              (item, idx) => this.lottery(this.dataList).name === item.name,
-            )
-            while (luckIndex === -1 || luckIndex >= this.prizes.length) {
-              luckIndex = this.lottery(this.dataList)
-            }
+            const luckIndex = Math.floor(Math.random() * this.dataList.length)
             // 调用stop停止旋转并传递中奖索引
             this.$refs.myLucky.stop(luckIndex)
           }, 100)
@@ -188,37 +178,43 @@ export default {
     },
     // 抽奖结束会触发end回调
     endCallback(prize) {
-      // // 播放动画
-      // const dotLottie = this.$refs.myLottie.getDotLottieInstance()
-      // this.isShow = true
-      // dotLottie.play()
-      // dotLottie.addEventListener('complete', () => {
-      //   this.isShow = false
-      //   if (prize?.info.name === '空空卡') {
-      //     showDialog({
-      //       message: `很遗憾！未中奖！`,
-      //       theme: 'round-button',
-      //     })
-      //   } else {
-      //     showDialog({
-      //       title: '中奖啦！🎉',
-      //       message: `恭喜您获得了：${prize.info.name}*1`,
-      //       theme: 'round-button',
-      //     })
-      //     addHistory({
-      //       prizeId: prize.info.pid,
-      //       name: prize.info.name,
-      //     })
-      //       .then((res) => {
-      //         if (res.code !== 200) {
-      //           showToast(res?.msg)
-      //         }
-      //       })
-      //       .catch(() => {
-      //         showNotify({ message: '啊哦～服务出了点问题！', type: 'danger' })
-      //       })
-      //   }
-      // })
+      // 播放动画
+      const dotLottie = this.$refs.myLottie.getDotLottieInstance()
+      this.isShow = true
+      dotLottie.play()
+      dotLottie.addEventListener('complete', async () => {
+        this.isShow = false
+        if (prize?.info.name === '空空卡') {
+          showDialog({
+            message: `很遗憾！未中奖！`,
+            theme: 'round-button',
+          })
+        } else {
+          showDialog({
+            title: '中奖啦！🎉',
+            message: `恭喜您获得了：${prize.info.name}*1`,
+            theme: 'round-button',
+          })
+          try {
+            let res = await addHistory({
+              prizeId: prize.info.id,
+            })
+            if (res.code !== 200) {
+              showToast(res?.msg)
+              return
+            }
+            const c = this.userInfo.lottery_chances - 1
+            await updateProfile({
+              lottery_chances: c,
+            })
+            await this.updateUserInfo()
+          } catch (e) {
+            console.error(e)
+            showNotify({ message: '啊哦～服务出了点问题！', type: 'danger' })
+          }
+
+        }
+      })
     },
     lottery(items) {
       // 计算总权重
@@ -257,12 +253,12 @@ export default {
         if (res.code === 200) {
           const d = res.data?.map((history) => {
             return {
-              id: history.hid,
+              id: history.id,
               condition: '无门槛',
               reason: '',
               value: 150,
-              name: history.name,
-              startAt: history.createAt / 1000,
+              name: history?.prize?.name,
+              startAt: new Date(history.createdAt).getTime() / 1000,
               endAt: new Date('2099-12-31 23:59:59').getTime() / 1000,
               valueDesc: '1',
               unitDesc: '次',
@@ -270,8 +266,8 @@ export default {
               info: history,
             }
           })
-          this.coupons = d.filter((item) => !item.info.status)
-          this.defaultCoupons = d.filter((item) => item.info.status)
+          this.coupons = d.filter((item) => !item?.write_off)
+          this.defaultCoupons = d.filter((item) => item?.write_off)
         }
 
         console.log(res)
@@ -286,41 +282,44 @@ export default {
     handleHelp() {
       this.showQRCode = true
     },
-    async checkInvite() {
-      const { inviter, qid, type } = this.$route.query
-      if (inviter && qid && type) {
-        if (type === 0) {
-          await showDialog({
-            title: '温馨提示',
-            message: '将为好友增加一次抽奖机会',
-          })
-          const res = await writeOff({
-            inviter,
-            qid,
-            type,
-          })
-          if (res.code === 200) {
-            addCount({
-              inviter: inviter,
-            }).then(r => {
-              if (r.code === 200) {
-                showToast('助力成功')
-              } else {
-                showToast(r.msg)
-              }
-            }).catch(e => {
-              showToast("助力失败")
-            })
-
-          } else {
-            showToast(res.msg)
-          }
-        } else if (type === 1) {
-          await showDialog({
-            title: '温馨提示',
-            message: '确认核销',
-          })
+    async handleAddCount(qid) {
+      try {
+        await showDialog({
+          title: '温馨提示',
+          message: '将为对方增加一次抽奖机会',
+        })
+        const res = await addCount({
+          qid,
+        })
+        if (res.code === 200) {
+          showToast('助力成功')
+        } else {
+          showToast(res.msg)
         }
+      } catch (e) {
+        console.error(e)
+        showToast('助力失败！')
+      }
+    },
+    async checkInvite() {
+      const { qid, type } = this.$route.query
+      console.log(this.$route.query)
+      if (qid && type) {
+        if (Number(type) === 1) {
+          await this.handleAddCount(qid)
+        } else if (Number(type) === 0) {
+          // await showDialog({
+          //   title: '温馨提示',
+          //   message: '确认核销',
+          // })
+        }
+        const { query } = this.$route;
+        const newQuery = Object.keys(query).length > 0 ? JSON.parse(JSON.stringify(query)) : null;
+        delete newQuery.qid;
+        delete newQuery.type;
+        this.$router.replace({
+          query: newQuery,
+        });
       }
     },
   },
