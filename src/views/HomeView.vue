@@ -59,11 +59,29 @@
         />
       </van-popup>
       <HelpPopup v-model:show="showQRCode" />
-      <div v-show="bindLottieShow"  class="bindSuccessBox" style="position: fixed; top: 0; left: 0; z-index: 9; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.35)">
+      <div
+        v-show="bindLottieShow"
+        class="bindSuccessBox"
+        style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          z-index: 9;
+          width: 100vw;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.35);
+        "
+      >
         <div>
-          <DotLottieVue ref="bindLottieRef"
-                        :autoplay="false"
-                        :loop="false" src="https://lottie.host/db3d6e79-5e37-4287-8e5a-9d19eed269e4/H7iyYD1k4R.lottie" />
+          <DotLottieVue
+            ref="bindLottieRef"
+            :autoplay="false"
+            :loop="false"
+            src="https://lottie.host/db3d6e79-5e37-4287-8e5a-9d19eed269e4/H7iyYD1k4R.lottie"
+          />
         </div>
       </div>
     </main>
@@ -75,7 +93,7 @@ import btnPNG from '@/assets/btn.png'
 import { getPrizeList } from '@/api/prize.js'
 import { showConfirmDialog, showDialog, showNotify, showToast } from 'vant'
 import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
-import { addHistory, getHistoryList } from '@/api/history.js'
+import { addHistory, getHistoryList, writeOff, writeOffCheck } from '@/api/history.js'
 import { mapActions, mapState } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
 import { addCount, bind, getUserInfoByQid, updateProfile } from '@/api/user.js'
@@ -133,7 +151,7 @@ export default {
       disabledCoupons: [],
       chosenCoupon: -1,
       showQRCode: false,
-      bindLottieShow: false
+      bindLottieShow: false,
     }
   },
   computed: {
@@ -309,7 +327,7 @@ export default {
     },
     async handleBind(qid) {
       try {
-        let r = await getUserInfoByQid(qid);
+        let r = await getUserInfoByQid(qid)
         if (r.code !== 200) {
           return
         }
@@ -321,7 +339,6 @@ export default {
             qid,
           })
           if (res.code === 200) {
-
             this.handlePlayBindAnimate()
             await this.updateUserInfo()
           } else {
@@ -333,13 +350,43 @@ export default {
         showToast('绑定失败！')
       }
     },
+    async handleWriteOff(qid) {
+
+      try {
+        let res = await writeOffCheck(qid)
+        if (res.code !== 200) {
+          return
+        }
+        let r = await writeOff(qid)
+        if (r.code !== 200) {
+          return
+        }
+        await showConfirmDialog({
+          title: '温馨提示',
+          message: `是否核销${res.data?.prizeName}*1`,
+        }).then(async () => {
+          const res = await writeOff({
+            qid,
+          })
+          if (res.code === 200) {
+            showToast('核销成功')
+            await this.updateUserInfo()
+          } else {
+            showToast(res.msg)
+          }
+        })
+      } catch (e) {
+        console.error(e)
+        showToast('核销失败！')
+      }
+    },
     handlePlayBindAnimate() {
       // 播放动画
       const dotLottie = this.$refs.bindLottieRef.getDotLottieInstance()
       this.bindLottieShow = true
       dotLottie.play()
       dotLottie.addEventListener('complete', async () => {
-        this.bindLottieShow = false;
+        this.bindLottieShow = false
         showToast('绑定成功')
       })
     },
@@ -351,6 +398,8 @@ export default {
           await this.handleAddCount(qid)
         } else if (Number(type) === 0) {
           await this.handleBind(qid)
+        } else if (Number(type) === 2) {
+          await this.handleWriteOff(qid)
         }
         const { query } = this.$route
         const newQuery = Object.keys(query).length > 0 ? JSON.parse(JSON.stringify(query)) : null

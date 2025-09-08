@@ -11,3 +11,10 @@ export const addHistory = (data) => {
 export const writeOff = (data) => {
   return http.post('/history/writeOff', data)
 }
+
+export const getWriteOffQRCode = (hid) => {
+  return http.get(`/history/getWriteOffQRCode?hid=${hid}`)
+}
+export const writeOffCheck = (qid) => {
+  return http.get(`/history/writeOffCheck?qid=${qid}`)
+}
