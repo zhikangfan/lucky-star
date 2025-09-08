@@ -48,3 +48,6 @@ export const unbind = () => {
 export const addCount = (data) => {
   return http.post('/user/addCount', data)
 }
+export const getUserInfoByQid = (qid) => {
+  return http.get(`/user/qid?qid=${qid}`)
+}

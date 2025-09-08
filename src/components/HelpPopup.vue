@@ -1,5 +1,5 @@
 <template>
-  <van-popup v-bind="$attrs" @open="onOpen" round @close="onClose">
+  <van-popup v-bind="$attrs" @open="onOpen" round @close="onClose"  :close-on-click-overlay="true">
     <div class="helpContainer">
       <div class="title">
         扫描或分享二维码
@@ -67,6 +67,7 @@ const onOpen = async () => {
 }
 const onClose = async () => {
   flag.value = false;
+  emit('update:show', false)
 }
 </script>
 <style lang="less" scoped>

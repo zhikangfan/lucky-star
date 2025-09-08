@@ -59,6 +59,13 @@
         />
       </van-popup>
       <HelpPopup v-model:show="showQRCode" />
+      <div v-show="bindLottieShow"  class="bindSuccessBox" style="position: fixed; top: 0; left: 0; z-index: 9; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.35)">
+        <div>
+          <DotLottieVue ref="bindLottieRef"
+                        :autoplay="false"
+                        :loop="false" src="https://lottie.host/db3d6e79-5e37-4287-8e5a-9d19eed269e4/H7iyYD1k4R.lottie" />
+        </div>
+      </div>
     </main>
   </BaseLayout>
 </template>
@@ -66,14 +73,13 @@
 import bgPNG from '@/assets/bg.png'
 import btnPNG from '@/assets/btn.png'
 import { getPrizeList } from '@/api/prize.js'
-import { showDialog, showNotify, showToast } from 'vant'
+import { showConfirmDialog, showDialog, showNotify, showToast } from 'vant'
 import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
 import { addHistory, getHistoryList } from '@/api/history.js'
 import { mapActions, mapState } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
-import { addCount, updateProfile } from '@/api/user.js'
+import { addCount, bind, getUserInfoByQid, updateProfile } from '@/api/user.js'
 import HelpPopup from '@/components/HelpPopup.vue'
-import { writeOff } from '@/api/invite.js'
 import BaseLayout from '@/layout/BaseLayout.vue'
 
 export default {
@@ -127,6 +133,7 @@ export default {
       disabledCoupons: [],
       chosenCoupon: -1,
       showQRCode: false,
+      bindLottieShow: false
     }
   },
   computed: {
@@ -212,7 +219,6 @@ export default {
             console.error(e)
             showNotify({ message: '啊哦～服务出了点问题！', type: 'danger' })
           }
-
         }
       })
     },
@@ -301,6 +307,42 @@ export default {
         showToast('助力失败！')
       }
     },
+    async handleBind(qid) {
+      try {
+        let r = await getUserInfoByQid(qid);
+        if (r.code !== 200) {
+          return
+        }
+        await showConfirmDialog({
+          title: '温馨提示',
+          message: `确定要与${r.data?.nickname}绑定吗？`,
+        }).then(async () => {
+          const res = await bind({
+            qid,
+          })
+          if (res.code === 200) {
+
+            this.handlePlayBindAnimate()
+            await this.updateUserInfo()
+          } else {
+            showToast(res.msg)
+          }
+        })
+      } catch (e) {
+        console.error(e)
+        showToast('绑定失败！')
+      }
+    },
+    handlePlayBindAnimate() {
+      // 播放动画
+      const dotLottie = this.$refs.bindLottieRef.getDotLottieInstance()
+      this.bindLottieShow = true
+      dotLottie.play()
+      dotLottie.addEventListener('complete', async () => {
+        this.bindLottieShow = false;
+        showToast('绑定成功')
+      })
+    },
     async checkInvite() {
       const { qid, type } = this.$route.query
       console.log(this.$route.query)
@@ -308,18 +350,15 @@ export default {
         if (Number(type) === 1) {
           await this.handleAddCount(qid)
         } else if (Number(type) === 0) {
-          // await showDialog({
-          //   title: '温馨提示',
-          //   message: '确认核销',
-          // })
+          await this.handleBind(qid)
         }
-        const { query } = this.$route;
-        const newQuery = Object.keys(query).length > 0 ? JSON.parse(JSON.stringify(query)) : null;
-        delete newQuery.qid;
-        delete newQuery.type;
+        const { query } = this.$route
+        const newQuery = Object.keys(query).length > 0 ? JSON.parse(JSON.stringify(query)) : null
+        delete newQuery.qid
+        delete newQuery.type
         this.$router.replace({
           query: newQuery,
-        });
+        })
       }
     },
   },
