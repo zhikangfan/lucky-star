@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h1 style="text-align: center; font-weight: bold;">欢迎{{viewType === 'login' ? '登录': '注册'}}</h1>
     <van-form @submit="onSubmit" v-if="viewType === 'login'">
       <van-cell-group inset>
         <van-field

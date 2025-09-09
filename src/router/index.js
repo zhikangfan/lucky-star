@@ -21,9 +21,9 @@ const router = createRouter({
       component: () => import('../views/MineView.vue'),
     },
     {
-      path: '/invite',
-      name: 'invite',
-      component: () => import('../views/InviteView.vue'),
+      path: '/prize',
+      name: 'prize',
+      component: () => import('../views/PrizeEditView.vue'),
     },
   ],
 })
