@@ -49,7 +49,6 @@ const getQRCode = async () => {
         let r = await writeOffCheck(res.data.qid)
         if (!r || r.code !== 200) {
           flag.value = false
-          console.log('finish')
           isExpired.value = true
           // TODO: 二维码已使用或已过期
           break

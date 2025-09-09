@@ -1,6 +1,6 @@
 <template>
   <BaseLayout>
-    <div>
+    <div style="padding: 25px;">
       <van-space direction="vertical" fill>
         <van-button
           round
@@ -13,9 +13,13 @@
         >
         <div v-else>
           <van-space direction="vertical" fill>
-            <div>
-              绑定对象：{{ userInfo?.companion_user?.nickname }} ID:
-              {{ userInfo?.companion_user?.id }}
+            <div style="margin-bottom: 25px;">
+              <div>
+                绑定对象：{{ userInfo?.companion_user?.nickname }}
+              </div>
+              <div style="margin-top: 8px;">
+                ID：{{ userInfo?.companion_user?.id }}
+              </div>
             </div>
             <van-button round block type="danger" plain @click="handleUnbind">解除绑定</van-button>
           </van-space>

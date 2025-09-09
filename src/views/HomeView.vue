@@ -19,6 +19,7 @@
         次抽奖机会
       </div>
       <LuckyWheel
+        v-if="prizes.length > 0"
         ref="myLucky"
         width="300px"
         height="300px"
@@ -28,6 +29,7 @@
         @start="startCallback"
         @end="endCallback"
       />
+      <img src="@/assets/noData.svg" width="200px" height="200px" alt="" v-else>
 
       <div style="margin: 20px 0">
         <van-space direction="vertical">
@@ -164,7 +166,7 @@ export default {
   },
   computed: {
     prizes() {
-      return this.dataList?.map((item, idx) => {
+      return this.dataList?.map?.((item, idx) => {
         return {
           background: idx % 2 === 0 ? '#E8589F' : '#F9F7D8',
           fonts: [
@@ -181,7 +183,6 @@ export default {
     },
     ...mapState(useUserStore, {
       userInfo: (store) => {
-        console.log(store)
         return store.userInfo
       },
     }),
@@ -270,13 +271,18 @@ export default {
       const res = await getPrizeList()
       if (res.code === 200) {
         this.dataList = res.data
+        if (this.dataList.length === 0) {
+          showDialog({
+            title: '温馨提示',
+            message: '暂无奖品，快去添加吧',
+          })
+        }
       } else {
         await showDialog({
           title: '温馨提示',
           message: res.msg,
         })
       }
-      console.log(res)
     },
     async changePopup(val) {
       this.showPopup = val
@@ -391,7 +397,6 @@ export default {
     },
     async checkInvite() {
       const { qid, type } = this.$route.query
-      console.log(this.$route.query)
       if (qid && type) {
         if (Number(type) === 1) {
           await this.handleAddCount(qid)
