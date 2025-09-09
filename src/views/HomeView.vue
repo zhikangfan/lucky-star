@@ -4,7 +4,7 @@
       <h1 class="title">幸运大抽奖</h1>
       <div
         style="
-          background: rgba(0, 0, 0, 0.5);
+          background: rgba(0, 0, 0, 0.25);
           margin: 20px 0;
           color: #fff;
           font-size: 16px;
@@ -54,11 +54,15 @@
           :chosen-coupon="chosenCoupon"
           :disabled-coupons="disabledCoupons"
           @change="onChange"
-          @exchange="onExchange"
           :show-exchange-bar="false"
-        />
+        >
+          <template #list-button>
+            <van-button type="primary" block round @click="showWriteOffPopup">确定</van-button>
+          </template>
+        </van-coupon-list>
       </van-popup>
       <HelpPopup v-model:show="showQRCode" />
+      <WriteOffPopup v-model:show="showWriteOff" :hid="currentCheckHistoryId" />
       <div
         v-show="bindLottieShow"
         class="bindSuccessBox"
@@ -99,9 +103,11 @@ import { useUserStore } from '@/stores/user.js'
 import { addCount, bind, getUserInfoByQid, updateProfile } from '@/api/user.js'
 import HelpPopup from '@/components/HelpPopup.vue'
 import BaseLayout from '@/layout/BaseLayout.vue'
+import WriteOffPopup from '@/components/WriteOffPopup.vue'
 
 export default {
   components: {
+    WriteOffPopup,
     BaseLayout,
     HelpPopup,
     DotLottieVue,
@@ -149,9 +155,11 @@ export default {
       active: 0,
       coupons: [],
       disabledCoupons: [],
-      chosenCoupon: -1,
+      chosenCoupon: 0,
       showQRCode: false,
+      showWriteOff: false,
       bindLottieShow: false,
+      currentCheckHistoryId: '',
     }
   },
   computed: {
@@ -290,18 +298,13 @@ export default {
               info: history,
             }
           })
-          this.coupons = d.filter((item) => !item?.write_off)
-          this.defaultCoupons = d.filter((item) => item?.write_off)
+          this.coupons = d.filter((item) => !item.info?.write_off)
+          this.disabledCoupons = d.filter((item) => item.info?.write_off)
         }
-
-        console.log(res)
       }
     },
     onChange(index) {
       this.chosenCoupon = index
-    },
-    onExchange(code) {
-      console.log(code, '--code')
     },
     handleHelp() {
       this.showQRCode = true
@@ -351,14 +354,10 @@ export default {
       }
     },
     async handleWriteOff(qid) {
-
+      // http://192.168.31.11:5173/?qid=53febfd8-5db1-41f0-a95e-7b9ea837445b&type=2
       try {
         let res = await writeOffCheck(qid)
         if (res.code !== 200) {
-          return
-        }
-        let r = await writeOff(qid)
-        if (r.code !== 200) {
           return
         }
         await showConfirmDialog({
@@ -410,6 +409,12 @@ export default {
         })
       }
     },
+    showWriteOffPopup() {
+      this.showPopup = false;
+      this.showWriteOff = true;
+      const currentCheckedHistory = this.coupons[this.chosenCoupon];
+      this.currentCheckHistoryId = currentCheckedHistory.id
+    }
   },
   mounted() {
     this.checkInvite()

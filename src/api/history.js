@@ -13,7 +13,7 @@ export const writeOff = (data) => {
 }
 
 export const getWriteOffQRCode = (hid) => {
-  return http.get(`/history/getWriteOffQRCode?hid=${hid}`)
+  return http.get(`/history/writeOffQRCode?hid=${hid}`)
 }
 export const writeOffCheck = (qid) => {
   return http.get(`/history/writeOffCheck?qid=${qid}`)

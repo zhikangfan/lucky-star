@@ -8,19 +8,19 @@
           type="primary"
           plain
           @click="handleInvite"
-          v-if="!userInfo.companion"
+          v-if="!userInfo?.companion"
           >邀请同伴</van-button
         >
         <div v-else>
           <van-space direction="vertical" fill>
             <div>
-              绑定对象：{{ userInfo.companion_user?.nickname }} ID:
-              {{ userInfo.companion_user?.id }}
+              绑定对象：{{ userInfo?.companion_user?.nickname }} ID:
+              {{ userInfo?.companion_user?.id }}
             </div>
             <van-button round block type="danger" plain @click="handleUnbind">解除绑定</van-button>
           </van-space>
         </div>
-        <van-button round block type="danger">退出登录</van-button>
+        <van-button round block type="danger" @click="handleLogout">退出登录</van-button>
       </van-space>
     </div>
     <BindPopup v-model:show="showQRCode" />
@@ -73,6 +73,16 @@ const handleUnbind = async () => {
     } else {
       showToast(res.msg)
     }
+  })
+}
+const handleLogout = async () => {
+  showConfirmDialog({
+    title: '温馨提示',
+    message: '确定要退出登录吗？',
+  }).then(async () => {
+    await userStore.handleLogout()
+
+
   })
 }
 </script>

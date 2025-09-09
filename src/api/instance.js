@@ -7,9 +7,13 @@ const http = axios.create({
   withCredentials: true, // 携带cookie
 })
 const responseFullFilledHandler = (response) => {
+  console.log( encodeURIComponent(window.location.pathname + window.location.search))
   if (response.data.code === 401) {
     router.replace({
-      path: '/login'
+      path: '/login',
+      query: {
+        redirect: encodeURIComponent(window.location.pathname + window.location.search)
+      }
     })
   }
   if (response.data.code === 500) {

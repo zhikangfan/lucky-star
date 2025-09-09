@@ -1,6 +1,8 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { getProfile } from '@/api/user.js'
+import { getProfile, logout } from '@/api/user.js'
+import router from '@/router/index.js'
+import { showToast } from 'vant'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref({})
@@ -14,8 +16,14 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const logout = () => {
+  const handleLogout = async () => {
     userInfo.value = null
+    const res = await logout();
+    if (res.code === 200) {
+      router.replace('/login')
+    } else {
+      showToast(res.msg)
+    }
   }
 
 
@@ -30,5 +38,5 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  return { userInfo, setUserInfo, updateUserInfo, logout, isLogin }
+  return { userInfo, setUserInfo, updateUserInfo, handleLogout, isLogin }
 })

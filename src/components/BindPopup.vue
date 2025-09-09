@@ -12,7 +12,7 @@
         </div>
         <img v-if="qrCodeSrc" :src="qrCodeSrc" alt="" />
       </div>
-      <button class="shareBtn">分享给他</button>
+      <button class="shareBtn" @click="handleShare">复制分享链接</button>
     </div>
   </van-popup>
 </template>
@@ -21,8 +21,11 @@ import QRCode from 'qrcode'
 import { ref } from 'vue'
 import { getBindQRCode,bindCheck } from '@/api/user.js'
 import { useUserStore } from '@/stores/user.js'
+import { copyText } from 'vue3-clipboard'
+import { showToast } from 'vant'
 const userStore = useUserStore()
 const qrCodeSrc = ref('')
+const shareLink = ref('')
 const flag = ref(true)
 const loading = ref(true)
 const isExpired = ref(false)
@@ -36,6 +39,7 @@ const getQRCode = async () => {
     loading.value = false
     if (res.code === 200) {
       qrCodeSrc.value = await QRCode.toDataURL(res.data.src)
+      shareLink.value = res.data.src;
       flag.value = true
       while (flag.value) {
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -65,6 +69,18 @@ const onOpen = async () => {
 const onClose = async () => {
   flag.value = false
   emit('update:show', false)
+}
+const handleShare = () => {
+  if (!shareLink.value) {
+    return
+  }
+  copyText(shareLink.value, undefined, (error) => {
+    if (error) {
+      showToast('复制失败！☹️')
+    } else {
+      showToast('复制成功！🎉')
+    }
+  })
 }
 </script>
 <style lang="less" scoped>

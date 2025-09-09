@@ -1,18 +1,16 @@
 <template>
-  <van-popup v-bind="$attrs" @open="onOpen" round @close="onClose"  :close-on-click-overlay="true">
+  <van-popup v-bind="$attrs" @open="onOpen" round @close="onClose" close-on-click-overlay="true">
     <div class="helpContainer">
-      <div class="title">
-        扫描或分享二维码
-      </div>
+      <div class="title">扫描或分享二维码</div>
       <div class="qrCodeBox">
         <div class="loadingBox" v-if="loading">
           <div class="loader"></div>
         </div>
         <div v-else-if="isExpired" class="refreshBox" @click="getQRCode">
-          <van-icon name="replay" color="#fff" size="32px"/>
+          <van-icon name="replay" color="#fff" size="32px" />
           <span>二维码已失效</span>
         </div>
-        <img v-if="qrCodeSrc" :src="qrCodeSrc" alt="">
+        <img v-if="qrCodeSrc" :src="qrCodeSrc" alt="" />
       </div>
       <button class="shareBtn" @click="handleShare">复制分享链接</button>
     </div>
@@ -20,57 +18,62 @@
 </template>
 <script setup>
 import QRCode from 'qrcode'
-import { ref } from 'vue'
-import { getAddCountQRCode, addCountCheck } from '@/api/user.js'
-import { useUserStore } from '@/stores/user.js'
 import { copyText } from 'vue3-clipboard'
+import { ref } from 'vue'
+import { useUserStore } from '@/stores/user.js'
+import { getWriteOffQRCode, writeOffCheck } from '@/api/history.js'
 import { showToast } from 'vant'
 const userStore = useUserStore()
 const qrCodeSrc = ref('')
-const shareLink = ref('')
+const shareLink = ref('');
 const flag = ref(true)
 const loading = ref(true)
 const isExpired = ref(false)
 // 定义 emit 用于触发关闭事件
 const emit = defineEmits(['update:show'])
-const getQRCode = async() => {
-  loading.value = true;
-  isExpired.value = false;
+const props = defineProps({
+  hid: String
+})
+const getQRCode = async () => {
+  loading.value = true
+  isExpired.value = false
   try {
-    let res = await getAddCountQRCode()
-    loading.value = false;
+    let res = await getWriteOffQRCode(props.hid)
+    loading.value = false
     if (res.code === 200) {
       qrCodeSrc.value = await QRCode.toDataURL(res.data.src)
       shareLink.value = res.data.src
-      flag.value = true;
+      flag.value = true
       while (flag.value) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        let r = await addCountCheck(res.data.qid)
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        let r = await writeOffCheck(res.data.qid)
         if (!r || r.code !== 200) {
           flag.value = false
           console.log('finish')
-          isExpired.value = true;
+          isExpired.value = true
           // TODO: 二维码已使用或已过期
-          break;
-        } else if(r.data.status === true) {
+          break
+        } else if (r.data.status === true) {
           flag.value = false
           emit('update:show', false)
           await userStore.updateUserInfo()
-          break;
+          break
         }
       }
+    } else {
+      onClose();
+      showToast(res.msg)
     }
   } catch (e) {
     console.error(e)
-    loading.value = false;
+    loading.value = false
   }
-
 }
 const onOpen = async () => {
   await getQRCode()
 }
 const onClose = async () => {
-  flag.value = false;
+  flag.value = false
   emit('update:show', false)
 }
 const handleShare = () => {
@@ -87,20 +90,42 @@ const handleShare = () => {
 }
 </script>
 <style lang="less" scoped>
-@keyframes l20-1{
-  0%    {clip-path: polygon(50% 50%,0       0,  50%   0%,  50%    0%, 50%    0%, 50%    0%, 50%    0% )}
-  12.5% {clip-path: polygon(50% 50%,0       0,  50%   0%,  100%   0%, 100%   0%, 100%   0%, 100%   0% )}
-  25%   {clip-path: polygon(50% 50%,0       0,  50%   0%,  100%   0%, 100% 100%, 100% 100%, 100% 100% )}
-  50%   {clip-path: polygon(50% 50%,0       0,  50%   0%,  100%   0%, 100% 100%, 50%  100%, 0%   100% )}
-  62.5% {clip-path: polygon(50% 50%,100%    0, 100%   0%,  100%   0%, 100% 100%, 50%  100%, 0%   100% )}
-  75%   {clip-path: polygon(50% 50%,100% 100%, 100% 100%,  100% 100%, 100% 100%, 50%  100%, 0%   100% )}
-  100%  {clip-path: polygon(50% 50%,50%  100%,  50% 100%,   50% 100%,  50% 100%, 50%  100%, 0%   100% )}
+@keyframes l20-1 {
+  0% {
+    clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
+  }
+  12.5% {
+    clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%);
+  }
+  25% {
+    clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%);
+  }
+  50% {
+    clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%);
+  }
+  62.5% {
+    clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%);
+  }
+  75% {
+    clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%);
+  }
+  100% {
+    clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%);
+  }
 }
-@keyframes l20-2{
-  0%    {transform:scaleY(1)  rotate(0deg)}
-  49.99%{transform:scaleY(1)  rotate(135deg)}
-  50%   {transform:scaleY(-1) rotate(0deg)}
-  100%  {transform:scaleY(-1) rotate(-135deg)}
+@keyframes l20-2 {
+  0% {
+    transform: scaleY(1) rotate(0deg);
+  }
+  49.99% {
+    transform: scaleY(1) rotate(135deg);
+  }
+  50% {
+    transform: scaleY(-1) rotate(0deg);
+  }
+  100% {
+    transform: scaleY(-1) rotate(-135deg);
+  }
 }
 .helpContainer {
   display: flex;
@@ -139,7 +164,7 @@ const handleShare = () => {
       justify-content: center;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,.5);
+      background: rgba(0, 0, 0, 0.5);
 
       .loader {
         width: 40px;
@@ -161,7 +186,7 @@ const handleShare = () => {
       justify-content: center;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,.5);
+      background: rgba(0, 0, 0, 0.5);
       color: #fff;
       font-size: 14px;
       span {
@@ -185,7 +210,5 @@ const handleShare = () => {
       background: rgb(194, 52, 58);
     }
   }
-
 }
-
 </style>

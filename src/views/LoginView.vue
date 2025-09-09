@@ -93,12 +93,13 @@
 import { ref } from 'vue'
 import { login, register } from '@/api/user.js'
 import { showDialog, showToast } from 'vant'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 const account = ref('')
 const password = ref('')
 const password_confirm = ref('')
 const nickname = ref('')
 const router = useRouter()
+const route = useRoute()
 const loading = ref(false)
 const viewType = ref('login')
 const onSubmit = async (values) => {
@@ -114,7 +115,7 @@ const onSubmit = async (values) => {
         message: res.msg,
       })
     } else {
-      await router.replace('/')
+      await router.replace(window.decodeURIComponent(route.query.redirect) || '/')
     }
   } finally {
     loading.value = false

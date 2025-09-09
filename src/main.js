@@ -5,13 +5,17 @@ import { createPinia } from 'pinia'
 import VueLuckyCanvas from '@lucky-canvas/vue'
 import App from './App.vue'
 import router from './router'
+import VueClipboard from 'vue3-clipboard'
 import { Form, Field, CellGroup, Button, Dialog, Space, Popover, Popup, Tab, Tabs, CouponCell, CouponList, Image, Loading ,Tabbar, TabbarItem, Icon} from 'vant';
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 app.use(VueLuckyCanvas)
-
+app.use(VueClipboard, {
+  autoSetContainer: true,
+  appendToBody: true,
+})
 app.use(Form);
 app.use(Field);
 app.use(CellGroup);
@@ -29,4 +33,5 @@ app.use(Loading);
 app.use(Tabbar);
 app.use(TabbarItem);
 app.use(Icon);
+
 app.mount('#app')
