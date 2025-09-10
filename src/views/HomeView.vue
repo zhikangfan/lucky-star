@@ -33,12 +33,12 @@
         v-else
         :autoplay="true"
         :loop="true"
-        style="width: 300px; height: 300px;"
+        style="width: 300px; height: 300px"
         :renderConfig="{
-              autoResize: true,
-              devicePixelRatio: 2,
-              freezeOnOffscreen: true
-            }"
+          autoResize: true,
+          devicePixelRatio: 2,
+          freezeOnOffscreen: true,
+        }"
         src="https://lottie.host/47e0afb5-c187-416f-89d0-cf1f8aeb31da/KcS7Ml6TI0.lottie"
       />
 
@@ -97,11 +97,11 @@
             ref="bindLottieRef"
             :autoplay="false"
             :loop="false"
-            style="width: 100vw; height: 100vh;"
+            style="width: 100vw; height: 100vh"
             :renderConfig="{
               autoResize: true,
               devicePixelRatio: 2,
-              freezeOnOffscreen: true
+              freezeOnOffscreen: true,
             }"
             src="https://lottie.host/db3d6e79-5e37-4287-8e5a-9d19eed269e4/H7iyYD1k4R.lottie"
           />
@@ -119,7 +119,14 @@ import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
 import { addHistory, getHistoryList, writeOff, writeOffCheck } from '@/api/history.js'
 import { mapActions, mapState } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
-import { addCount, bind, getUserInfoByQid, updateProfile } from '@/api/user.js'
+import {
+  addCount,
+  addCountCheck,
+  bind,
+  bindCheck,
+  getUserInfoByQid,
+  updateProfile,
+} from '@/api/user.js'
 import HelpPopup from '@/components/HelpPopup.vue'
 import BaseLayout from '@/layout/BaseLayout.vue'
 import WriteOffPopup from '@/components/WriteOffPopup.vue'
@@ -333,6 +340,10 @@ export default {
       this.showQRCode = true
     },
     async handleAddCount(qid) {
+      const result = await addCountCheck(qid)
+      if (result.code !== 200) {
+        return
+      }
       try {
         await showDialog({
           title: '温馨提示',
@@ -353,6 +364,10 @@ export default {
     },
     async handleBind(qid) {
       try {
+        const result = await bindCheck(qid)
+        if (result.code !== 200) {
+          return
+        }
         let r = await getUserInfoByQid(qid)
         if (r.code !== 200) {
           return
@@ -432,11 +447,11 @@ export default {
       }
     },
     showWriteOffPopup() {
-      this.showPopup = false;
-      this.showWriteOff = true;
-      const currentCheckedHistory = this.coupons[this.chosenCoupon];
+      this.showPopup = false
+      this.showWriteOff = true
+      const currentCheckedHistory = this.coupons[this.chosenCoupon]
       this.currentCheckHistoryId = currentCheckedHistory.id
-    }
+    },
   },
   mounted() {
     this.checkInvite()
