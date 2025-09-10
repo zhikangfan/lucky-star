@@ -247,6 +247,11 @@ export default {
             message: `很遗憾！未中奖！`,
             theme: 'round-button',
           })
+        } else if (prize?.info.name === '转移卡') {
+          showDialog({
+            message: `对方帮您再抽一次`,
+            theme: 'round-button',
+          })
         } else {
           showDialog({
             title: '中奖啦！🎉',
