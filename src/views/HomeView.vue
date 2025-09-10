@@ -29,7 +29,18 @@
         @start="startCallback"
         @end="endCallback"
       />
-      <img src="@/assets/noData.svg" width="200px" height="200px" alt="" v-else>
+      <DotLottieVue
+        v-else
+        :autoplay="true"
+        :loop="true"
+        style="width: 300px; height: 300px;"
+        :renderConfig="{
+              autoResize: true,
+              devicePixelRatio: 2,
+              freezeOnOffscreen: true
+            }"
+        src="https://lottie.host/47e0afb5-c187-416f-89d0-cf1f8aeb31da/KcS7Ml6TI0.lottie"
+      />
 
       <div style="margin: 20px 0">
         <van-space direction="vertical">
@@ -86,6 +97,12 @@
             ref="bindLottieRef"
             :autoplay="false"
             :loop="false"
+            style="width: 100vw; height: 100vh;"
+            :renderConfig="{
+              autoResize: true,
+              devicePixelRatio: 2,
+              freezeOnOffscreen: true
+            }"
             src="https://lottie.host/db3d6e79-5e37-4287-8e5a-9d19eed269e4/H7iyYD1k4R.lottie"
           />
         </div>
@@ -271,12 +288,12 @@ export default {
       const res = await getPrizeList()
       if (res.code === 200) {
         this.dataList = res.data
-        if (this.dataList.length === 0) {
-          showDialog({
-            title: '温馨提示',
-            message: '暂无奖品，快去添加吧',
-          })
-        }
+        // if (this.dataList.length === 0) {
+        //   showDialog({
+        //     title: '温馨提示',
+        //     message: '暂无奖品，快去添加吧',
+        //   })
+        // }
       } else {
         await showDialog({
           title: '温馨提示',

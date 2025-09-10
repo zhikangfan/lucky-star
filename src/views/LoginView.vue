@@ -1,6 +1,16 @@
 <template>
   <div>
-    <h1 style="text-align: center; font-weight: bold;">欢迎{{viewType === 'login' ? '登录': '注册'}}</h1>
+    <DotLottieVue
+      :autoplay="true"
+      :loop="true"
+      style="height: 90px; margin-bottom: 35px; margin-top: 20%;"
+      :renderConfig="{
+        autoResize: true,
+        devicePixelRatio: 2,
+        freezeOnOffscreen: true
+      }"
+      src="https://lottie.host/151bf51e-04d1-4c65-98ef-3d3c0d19a485/JW90u3TTv7.lottie"
+    />
     <van-form @submit="onSubmit" v-if="viewType === 'login'">
       <van-cell-group inset>
         <van-field
@@ -95,6 +105,7 @@ import { ref } from 'vue'
 import { login, register } from '@/api/user.js'
 import { showDialog, showToast } from 'vant'
 import { useRoute, useRouter } from 'vue-router'
+import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
 const account = ref('')
 const password = ref('')
 const password_confirm = ref('')

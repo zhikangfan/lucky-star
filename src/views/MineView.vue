@@ -31,6 +31,12 @@
     <div v-show="bindLottieShow"  class="bindSuccessBox" style="position: fixed; top: 0; left: 0; z-index: 9; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.35)">
       <div>
         <DotLottieVue ref="bindLottieRef"
+                      style="height: 100vh; width: 100vw;"
+                      :renderConfig="{
+                        autoResize: true,
+                        devicePixelRatio: 2,
+                        freezeOnOffscreen: true
+                      }"
                       :autoplay="false"
                       :loop="false"  src="https://lottie.host/0642ae99-2444-4a7a-8f3b-0f03062b2404/lP2S3vW0Cy.lottie" />
       </div>
