@@ -387,6 +387,7 @@ export default {
           if (res.code === 200) {
             this.handlePlayBindAnimate()
             await this.updateUserInfo()
+            await this.getData();
           } else {
             showToast(res.msg)
           }
