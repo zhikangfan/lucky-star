@@ -38,6 +38,9 @@ const getQRCode = async () => {
   loading.value = true
   isExpired.value = false
   try {
+    if (!props.hid) {
+      throw new Error('未传递hid')
+    }
     let res = await getWriteOffQRCode(props.hid)
     loading.value = false
     if (res.code === 200) {

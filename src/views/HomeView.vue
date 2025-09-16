@@ -70,7 +70,7 @@
           :show-exchange-bar="false"
         >
           <template #list-button>
-            <van-button type="primary" block round @click="showWriteOffPopup">确定</van-button>
+            <van-button type="primary" block round @click="showWriteOffPopup" :disabled="coupons.length === 0">确定</van-button>
           </template>
         </van-coupon-list>
       </van-popup>
@@ -454,9 +454,11 @@ export default {
     },
     showWriteOffPopup() {
       this.showPopup = false
-      this.showWriteOff = true
       const currentCheckedHistory = this.coupons[this.chosenCoupon]
-      this.currentCheckHistoryId = currentCheckedHistory.id
+      if (currentCheckedHistory.id) {
+        this.showWriteOff = true
+        this.currentCheckHistoryId = currentCheckedHistory.id
+      }
     },
   },
   mounted() {
