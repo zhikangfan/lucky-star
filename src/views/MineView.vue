@@ -24,6 +24,7 @@
             <van-button round block type="danger" plain @click="handleUnbind">解除绑定</van-button>
           </van-space>
         </div>
+        <van-button round block type="default" plain @click="$router.push('/prize')">奖品设置</van-button>
         <van-button round block type="danger" @click="handleLogout">退出登录</van-button>
       </van-space>
     </div>

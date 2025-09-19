@@ -213,7 +213,37 @@ export default {
   },
   methods: {
     ...mapActions(useUserStore, ['updateUserInfo']),
-    // 点击抽奖按钮会触发star回调
+    /**
+     * 抽奖函数（权重模式）
+     * @param {Array} prizes 奖品数组 [{ name: '一等奖', prob: 10 }, ...]
+     * @returns {string} 中奖奖品名称
+     */
+   lottery(prizes) {
+      let total = prizes.reduce((sum, p) => sum + p.chance, 0);
+      if (total === 0) {
+        throw new Error("所有奖品权重不能为0");
+      }
+
+      // 归一化为百分比
+      let normalized = prizes.map(p => ({
+        ...p,
+        chance: (p.chance / total) * 100
+      }));
+
+      // 生成随机数 [0,100)
+      let rand = Math.random() * 100;
+      let acc = 0;
+      for (let i = 0; i < normalized.length; i++) {
+        acc += normalized[i].chance;
+        if (rand < acc) {
+          return i
+        }
+      }
+
+      return Math.floor(Math.random() * this.dataList.length)
+  },
+
+// 点击抽奖按钮会触发star回调
     async startCallback() {
       // 调用抽奖组件的play方法开始游戏
       if (this.userInfo?.lottery_chances > 0) {
@@ -221,7 +251,7 @@ export default {
           this.$refs.myLucky.play()
           // 模拟调用接口异步抽奖
           setTimeout(() => {
-            const luckIndex = Math.floor(Math.random() * this.dataList.length)
+            const luckIndex = this.lottery(this.dataList)
             // 调用stop停止旋转并传递中奖索引
             this.$refs.myLucky.stop(luckIndex)
           }, 100)
@@ -277,24 +307,6 @@ export default {
           }
         }
       })
-    },
-    lottery(items) {
-      // 计算总权重
-      const total = items.reduce((sum, item) => {
-        return sum + (item.chance || 0)
-      }, 0)
-
-      // 生成随机数
-      let rand = Math.random() * total
-
-      // 按顺序减去权重，找到对应奖项
-      for (let i = 0; i < items.length; i++) {
-        if (rand < items[i].chance) {
-          return i // 返回索引
-        }
-        rand -= items[i].chance
-      }
-      return -1 // 默认返回第一个
     },
     async getData() {
       const res = await getPrizeList()

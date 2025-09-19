@@ -6,7 +6,32 @@ import VueLuckyCanvas from '@lucky-canvas/vue'
 import App from './App.vue'
 import router from './router'
 import VueClipboard from 'vue3-clipboard'
-import { Form, Field, CellGroup, Button, Dialog, Space, Popover, Popup, Tab, Tabs, CouponCell, CouponList, Image, Loading ,Tabbar, TabbarItem, Icon} from 'vant';
+import {
+  Form,
+  Field,
+  CellGroup,
+  Button,
+  Dialog,
+  Space,
+  Popover,
+  Popup,
+  Tab,
+  Tabs,
+  CouponCell,
+  CouponList,
+  Image,
+  Loading,
+  Tabbar,
+  TabbarItem,
+  Icon,
+  Cell,
+  NavBar,
+  Slider,
+  Radio,
+  Switch,
+  List,
+  Empty,
+} from 'vant'
 const app = createApp(App)
 
 app.use(createPinia())
@@ -18,6 +43,7 @@ app.use(VueClipboard, {
 })
 app.use(Form);
 app.use(Field);
+app.use(Cell);
 app.use(CellGroup);
 app.use(Button);
 app.use(Dialog);
@@ -33,5 +59,10 @@ app.use(Loading);
 app.use(Tabbar);
 app.use(TabbarItem);
 app.use(Icon);
-
+app.use(NavBar);
+app.use(Slider);
+app.use(Radio);
+app.use(Switch);
+app.use(List);
+app.use(Empty);
 app.mount('#app')
